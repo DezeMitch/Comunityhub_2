@@ -1,0 +1,281 @@
+// CommunityHub — core Prisma schema (Phase 0 foundation)
+// Extend per module in later phases; keep domain boundaries clear.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+  PENDING_VERIFICATION
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  WAITING
+  RESOLVED
+  CLOSED
+}
+
+model User {
+  id            String     @id @default(cuid())
+  email         String     @unique
+  emailVerified DateTime?
+  username      String     @unique
+  displayName   String?
+  avatarUrl     String?
+  bio           String?
+  passwordHash  String?
+  status        UserStatus @default(PENDING_VERIFICATION)
+  reputation    Int        @default(0)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  roles         UserRole[]
+  topics        ForumTopic[]     @relation("TopicAuthor")
+  posts         ForumPost[]      @relation("PostAuthor")
+  tickets       Ticket[]         @relation("TicketRequester")
+  assignedTickets Ticket[]       @relation("TicketAssignee")
+  applications  ApplicationSubmission[]
+  auditLogs     AuditLog[]
+
+  @@index([status])
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  provider          String
+  providerAccountId String
+  accessToken       String?
+  refreshToken      String?
+  expiresAt         DateTime?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model Role {
+  id          String           @id @default(cuid())
+  name        String           @unique
+  slug        String           @unique
+  description String?
+  color       String?
+  position    Int              @default(0)
+  isSystem    Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  users       UserRole[]
+  permissions RolePermission[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String           @id @default(cuid())
+  key         String           @unique
+  description String?
+  roles       RolePermission[]
+
+  @@map("permissions")
+}
+
+model UserRole {
+  userId     String
+  roleId     String
+  assignedAt DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model ForumCategory {
+  id          String       @id @default(cuid())
+  name        String
+  slug        String       @unique
+  description String?
+  position    Int          @default(0)
+  isLocked    Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  topics      ForumTopic[]
+
+  @@map("forum_categories")
+}
+
+model ForumTopic {
+  id         String        @id @default(cuid())
+  categoryId String
+  authorId   String
+  title      String
+  slug       String
+  isPinned   Boolean       @default(false)
+  isLocked   Boolean       @default(false)
+  viewCount  Int           @default(0)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  category   ForumCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  author     User          @relation("TopicAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  posts      ForumPost[]
+
+  @@unique([categoryId, slug])
+  @@index([authorId])
+  @@index([isPinned, updatedAt])
+  @@map("forum_topics")
+}
+
+model ForumPost {
+  id        String     @id @default(cuid())
+  topicId   String
+  authorId  String
+  content   String
+  isEdited  Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  topic     ForumTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  author    User       @relation("PostAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([topicId, createdAt])
+  @@index([authorId])
+  @@map("forum_posts")
+}
+
+model TicketCategory {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  tickets     Ticket[]
+
+  @@map("ticket_categories")
+}
+
+model Ticket {
+  id           String         @id @default(cuid())
+  categoryId   String
+  requesterId  String
+  assigneeId   String?
+  subject      String
+  status       TicketStatus   @default(OPEN)
+  priority     Int            @default(0)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  closedAt     DateTime?
+  category     TicketCategory @relation(fields: [categoryId], references: [id])
+  requester    User           @relation("TicketRequester", fields: [requesterId], references: [id])
+  assignee     User?          @relation("TicketAssignee", fields: [assigneeId], references: [id])
+  messages     TicketMessage[]
+
+  @@index([status, updatedAt])
+  @@index([requesterId])
+  @@index([assigneeId])
+  @@map("tickets")
+}
+
+model TicketMessage {
+  id         String   @id @default(cuid())
+  ticketId   String
+  authorId   String
+  content    String
+  isInternal Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  ticket     Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId, createdAt])
+  @@map("ticket_messages")
+}
+
+model ApplicationForm {
+  id          String                  @id @default(cuid())
+  name        String
+  slug        String                  @unique
+  description String?
+  schema      Json
+  isOpen      Boolean                 @default(true)
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
+  submissions ApplicationSubmission[]
+
+  @@map("application_forms")
+}
+
+model ApplicationSubmission {
+  id        String          @id @default(cuid())
+  formId    String
+  userId    String
+  answers   Json
+  status    String          @default("pending")
+  reviewedAt DateTime?
+  createdAt DateTime        @default(now())
+  form      ApplicationForm @relation(fields: [formId], references: [id], onDelete: Cascade)
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([formId, status])
+  @@index([userId])
+  @@map("application_submissions")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  action     String
+  targetType String?
+  targetId   String?
+  metadata   Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+  actor      User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([actorId])
+  @@index([action])
+  @@map("audit_logs")
+}
+
+model Setting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+
+  @@map("settings")
+}
