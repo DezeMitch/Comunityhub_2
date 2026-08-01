@@ -84,7 +84,7 @@ docs/           # Project documentation
 
 ```bash
 # Clone
-git clone https://github.com/DezeMitch/communityhub.git
+git clone https://github.com/DezeMitch/Comunityhub_2.git
 cd communityhub
 
 # Install dependencies
@@ -128,7 +128,7 @@ pnpm dev
 We welcome contributions of all kinds â€” code, docs, design, translations, and plugins.
 
 1. Read [CONTRIBUTING.md](./CONTRIBUTING.md)
-2. Check open [Issues](https://github.com/DezeMitch/communityhub/issues)
+2. Check open [Issues](https://github.com/DezeMitch/Comunityhub_2/issues)
 3. Open a pull request
 
 ---

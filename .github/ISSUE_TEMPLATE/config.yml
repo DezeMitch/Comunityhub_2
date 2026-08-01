@@ -1,8 +1,8 @@
-blank_issues_enabled: false
+﻿blank_issues_enabled: false
 contact_links:
   - name: Security vulnerability
-    url: https://github.com/DezeMitch/communityhub/security/advisories/new
+    url: https://github.com/DezeMitch/Comunityhub_2/security/advisories/new
     about: Report security issues privately (do not open a public issue).
   - name: Project discussions
-    url: https://github.com/DezeMitch/communityhub/discussions
+    url: https://github.com/DezeMitch/Comunityhub_2/discussions
     about: Ask questions and discuss roadmap ideas.

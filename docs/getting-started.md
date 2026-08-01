@@ -9,7 +9,7 @@
 ## Setup
 
 ```bash
-git clone https://github.com/DezeMitch/communityhub.git
+git clone https://github.com/DezeMitch/Comunityhub_2.git
 cd communityhub
 pnpm install
 cp .env.example .env

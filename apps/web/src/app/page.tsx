@@ -27,7 +27,7 @@ export default function HomePage() {
             Self-host
           </a>
           <a
-            href="https://github.com/DezeMitch/communityhub"
+            href="https://github.com/DezeMitch/Comunityhub_2"
             className="transition hover:text-white"
           >
             GitHub
@@ -78,7 +78,7 @@ export default function HomePage() {
           production scale.
         </p>
         <pre className="mt-8 overflow-x-auto rounded-2xl border border-white/10 bg-black/40 p-5 text-sm text-slate-200">
-{`git clone https://github.com/DezeMitch/communityhub.git
+{`git clone https://github.com/DezeMitch/Comunityhub_2.git
 cd communityhub
 pnpm install
 pnpm docker:up

@@ -110,4 +110,4 @@ Status legend:
 3. Extensibility (plugins + API)
 4. Polish, scale, and ecosystem
 
-Want to influence the roadmap? Open a [GitHub Discussion](https://github.com/DezeMitch/communityhub/discussions) or an issue with the `roadmap` label.
+Want to influence the roadmap? Open a [GitHub Discussion](https://github.com/DezeMitch/Comunityhub_2/discussions) or an issue with the `roadmap` label.
