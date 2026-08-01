@@ -17,7 +17,7 @@ Please **do not** create a public GitHub issue for security vulnerabilities.
 Instead, report privately via one of these channels:
 
 1. GitHub Security Advisories (preferred): **Security → Report a vulnerability** on the repository
-2. Email: `info@dezemitch.eu`
+2. Email: `security@communityhub.dev` *(replace with your real contact before publishing)*
 
 Include as much detail as possible:
 
